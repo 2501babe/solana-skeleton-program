@@ -4411,12 +4411,7 @@ dependencies = [
 name = "skeleton"
 version = "1.0.0"
 dependencies = [
- "arrayref",
- "bincode",
  "borsh 1.3.1",
- "num-derive 0.4.2",
- "num-traits",
- "num_enum 0.7.2",
  "serial_test",
  "solana-cli-config",
  "solana-logger",
@@ -4427,7 +4422,6 @@ dependencies = [
  "spl-token-client",
  "tempfile",
  "test-case",
- "thiserror",
  "tokio",
 ]
 

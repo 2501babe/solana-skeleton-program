@@ -44,7 +44,6 @@ mod tests {
 
     #[test]
     fn test_something() {
-        let _ = id();
-        assert!(true);
+        assert_eq!(id(), id());
     }
 }
