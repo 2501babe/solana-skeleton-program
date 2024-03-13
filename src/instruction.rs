@@ -20,7 +20,7 @@ pub enum SkeletonInstruction {
 }
 
 /// Creates a `DoSomething` instruction.
-pub fn initialize_pool(program_id: &Pubkey, some_account: &Pubkey) -> Instruction {
+pub fn do_something(program_id: &Pubkey, some_account: &Pubkey) -> Instruction {
     let data = borsh::to_vec(&SkeletonInstruction::DoSomething).unwrap();
     let accounts = vec![AccountMeta::new_readonly(*some_account, false)];
 
