@@ -1,6 +1,4 @@
-#![allow(dead_code)]
-#![allow(unused_imports)]
-
+#[allow(unused_imports)]
 use {
     serial_test::serial,
     skeleton::{
@@ -35,6 +33,10 @@ use {
     test_case::test_case,
     tokio::time::sleep,
 };
+
+// XXX this test setup will create a validator with a payer and a vote account
+// this is done so we dont have to rely on the user running it, having their config in the default location, etc
+// the one thing this doesnt do is you need to run `cargo build-sbf` yourself to build the bpf program
 
 type PClient = Arc<dyn ProgramClient<ProgramRpcClientSendTransaction>>;
 
@@ -187,6 +189,7 @@ async fn create_vote_account(
 }
 
 #[tokio::test]
+#[serial]
 async fn test_something() {
     let env = setup().await;
 
