@@ -1,23 +1,13 @@
-#[allow(unused_imports)]
 use {
     serial_test::serial,
-    skeleton::{
-        id,
-        instruction::{self, SkeletonInstruction},
-    },
+    skeleton::{id, instruction},
     solana_cli_config::Config as SolanaConfig,
     solana_rpc_client::nonblocking::rpc_client::RpcClient,
     solana_sdk::{
         bpf_loader_upgradeable,
-        clock::Epoch,
         epoch_schedule::{EpochSchedule, MINIMUM_SLOTS_PER_EPOCH},
-        native_token::LAMPORTS_PER_SOL,
         pubkey::Pubkey,
         signature::{write_keypair_file, Keypair, Signer},
-        stake::{
-            self,
-            state::{Authorized, Lockup, StakeStateV2},
-        },
         system_instruction, system_program,
         transaction::Transaction,
         vote::{
@@ -28,13 +18,11 @@ use {
     },
     solana_test_validator::{TestValidator, TestValidatorGenesis, UpgradeableProgramInfo},
     spl_token_client::client::{ProgramClient, ProgramRpcClient, ProgramRpcClientSendTransaction},
-    std::{path::PathBuf, process::Command, str::FromStr, sync::Arc, time::Duration},
+    std::{path::PathBuf, sync::Arc},
     tempfile::NamedTempFile,
-    test_case::test_case,
-    tokio::time::sleep,
 };
 
-// XXX this test setup will create a validator with a payer and a vote account
+// this test setup will create a validator with a payer and a vote account
 // this is done so we dont have to rely on the user running it, having their config in the default location, etc
 // the one thing this doesnt do is you need to run `cargo build-sbf` yourself to build the bpf program
 
@@ -117,19 +105,6 @@ async fn start_validator() -> (TestValidator, Keypair) {
     test_validator_genesis.start_async().await
 }
 
-async fn wait_for_next_epoch(rpc_client: &RpcClient) -> Epoch {
-    let current_epoch = rpc_client.get_epoch_info().await.unwrap().epoch;
-    println!("current epoch {}, advancing to next...", current_epoch);
-    loop {
-        let epoch_info = rpc_client.get_epoch_info().await.unwrap();
-        if epoch_info.epoch > current_epoch {
-            return epoch_info.epoch;
-        }
-
-        sleep(Duration::from_millis(200)).await;
-    }
-}
-
 async fn create_vote_account(
     program_client: &PClient,
     payer: &Keypair,
@@ -203,6 +178,8 @@ async fn test_something() {
         .try_partial_sign(&vec![&env.payer], blockhash)
         .unwrap();
 
-    let res = env.program_client.send_transaction(&transaction).await;
-    println!("HANA res: {:#?}", res);
+    env.program_client
+        .send_transaction(&transaction)
+        .await
+        .unwrap();
 }
