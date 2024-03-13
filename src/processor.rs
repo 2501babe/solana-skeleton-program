@@ -37,3 +37,14 @@ impl Processor {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_something() {
+        let _ = id();
+        assert!(true);
+    }
+}
