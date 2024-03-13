@@ -86,7 +86,13 @@ async fn setup() -> Env {
 }
 
 async fn start_validator() -> (TestValidator, Keypair) {
-    solana_logger::setup();
+    solana_logger::setup_with_default(
+        "solana_rbpf::vm=debug,\
+          solana_runtime::message_processor=debug,\
+          solana_runtime::system_instruction_processor=trace,\
+          solana_program_test=info",
+    );
+
     let mut test_validator_genesis = TestValidatorGenesis::default();
 
     test_validator_genesis.epoch_schedule(EpochSchedule::custom(
