@@ -17,7 +17,6 @@ use {
         },
     },
     solana_test_validator::{TestValidator, TestValidatorGenesis, UpgradeableProgramInfo},
-    spl_token_client::client::{ProgramClient, ProgramRpcClient, ProgramRpcClientSendTransaction},
     std::{path::PathBuf, sync::Arc},
     tempfile::NamedTempFile,
 };
@@ -26,12 +25,9 @@ use {
 // this is done so we dont have to rely on the user running it, having their config in the default location, etc
 // the one thing this doesnt do is you need to run `cargo build-sbf` yourself to build the bpf program
 
-type PClient = Arc<dyn ProgramClient<ProgramRpcClientSendTransaction>>;
-
 #[allow(dead_code)]
 pub struct Env {
     pub rpc_client: Arc<RpcClient>,
-    pub program_client: PClient,
     pub payer: Keypair,
     pub keypair_file_path: String,
     pub config_file_path: String,
@@ -47,12 +43,8 @@ async fn setup() -> Env {
     // start test validator
     let (validator, payer) = start_validator().await;
 
-    // make clients
+    // make client
     let rpc_client = Arc::new(validator.get_async_rpc_client());
-    let program_client: PClient = Arc::new(ProgramRpcClient::new(
-        rpc_client.clone(),
-        ProgramRpcClientSendTransaction,
-    ));
 
     // write the payer to disk
     let keypair_file = NamedTempFile::new().unwrap();
@@ -70,11 +62,10 @@ async fn setup() -> Env {
     solana_config.save(config_file_path).unwrap();
 
     // make vote account
-    let vote_account = create_vote_account(&program_client, &payer, &payer.pubkey()).await;
+    let vote_account = create_vote_account(&rpc_client, &payer, &payer.pubkey()).await;
 
     Env {
         rpc_client,
-        program_client,
         payer,
         keypair_file_path: keypair_file.path().to_str().unwrap().to_string(),
         config_file_path: config_file_path.to_string(),
@@ -112,7 +103,7 @@ async fn start_validator() -> (TestValidator, Keypair) {
 }
 
 async fn create_vote_account(
-    program_client: &PClient,
+    rpc_client: &RpcClient,
     payer: &Keypair,
     withdrawer: &Pubkey,
 ) -> Pubkey {
@@ -120,17 +111,17 @@ async fn create_vote_account(
     let vote_account = Keypair::new();
     let voter = Keypair::new();
 
-    let zero_rent = program_client
+    let zero_rent = rpc_client
         .get_minimum_balance_for_rent_exemption(0)
         .await
         .unwrap();
 
-    let vote_rent = program_client
+    let vote_rent = rpc_client
         .get_minimum_balance_for_rent_exemption(VoteState::size_of() * 2)
         .await
         .unwrap();
 
-    let blockhash = program_client.get_latest_blockhash().await.unwrap();
+    let blockhash = rpc_client.get_latest_blockhash().await.unwrap();
 
     let mut instructions = vec![system_instruction::create_account(
         &payer.pubkey(),
@@ -164,7 +155,7 @@ async fn create_vote_account(
         .try_partial_sign(&vec![&validator, &vote_account], blockhash)
         .unwrap();
 
-    program_client.send_transaction(&transaction).await.unwrap();
+    rpc_client.send_transaction(&transaction).await.unwrap();
 
     vote_account.pubkey()
 }
@@ -179,13 +170,10 @@ async fn test_something() {
 
     let mut transaction = Transaction::new_with_payer(&[instruction], Some(&env.payer.pubkey()));
 
-    let blockhash = env.program_client.get_latest_blockhash().await.unwrap();
+    let blockhash = env.rpc_client.get_latest_blockhash().await.unwrap();
     transaction
         .try_partial_sign(&vec![&env.payer], blockhash)
         .unwrap();
 
-    env.program_client
-        .send_transaction(&transaction)
-        .await
-        .unwrap();
+    env.rpc_client.send_transaction(&transaction).await.unwrap();
 }

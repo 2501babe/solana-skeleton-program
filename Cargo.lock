@@ -4332,7 +4332,6 @@ dependencies = [
  "solana-sdk",
  "solana-test-validator",
  "solana-transaction-status",
- "spl-token-client",
  "tempfile",
  "test-case",
  "tokio",
@@ -6365,32 +6364,6 @@ dependencies = [
  "spl-token-metadata-interface",
  "spl-transfer-hook-interface",
  "spl-type-length-value",
- "thiserror",
-]
-
-[[package]]
-name = "spl-token-client"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00b9f87ea372d6d98745a504b3cb5fb30dd5c1b9c714c98772452491d0188287"
-dependencies = [
- "async-trait",
- "curve25519-dalek",
- "futures 0.3.30",
- "futures-util",
- "solana-banks-interface",
- "solana-cli-output",
- "solana-program-test",
- "solana-rpc-client",
- "solana-rpc-client-api",
- "solana-sdk",
- "spl-associated-token-account",
- "spl-memo",
- "spl-token",
- "spl-token-2022",
- "spl-token-group-interface",
- "spl-token-metadata-interface",
- "spl-transfer-hook-interface",
  "thiserror",
 ]
 
